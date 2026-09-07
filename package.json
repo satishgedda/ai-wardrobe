@@ -1,19 +1,22 @@
 {
   "name": "ai-wardrobe",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "AI Wardrobe full-stack application",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "npm run test --prefix server",
+    "start": "npm run start --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "build": "npm run build --prefix client",
+    "lint": "npm run lint --prefix client && npm run lint --prefix server",
+    "dev": "concurrently -k npm:dev:server npm:dev:client"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+  "type": "commonjs",
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

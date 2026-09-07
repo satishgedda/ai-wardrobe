@@ -20,9 +20,11 @@ AI Wardrobe is a MERN application for organizing a personal wardrobe and generat
    npm install --prefix server
    ```
 
-2. Copy `.env.example` to `.env` at the repository root.
+2. Copy `.env.example` to `.env` at the repository root for the API configuration.
 
-3. Set `MONGODB_URI` to a MongoDB Atlas or local MongoDB database and replace `JWT_SECRET` with a long random secret. Configure the Cloudinary, OpenWeatherMap, and optional Gemini variables from `.env.example`. `VITE_API_URL` should point to the API base URL used by the browser.
+3. Copy `client/.env.example` to `client/.env` and set `VITE_API_URL` to the browser-accessible API base URL. For local development, use `http://localhost:5000/api/v1`; for production, use the deployed API URL, for example `https://api.example.com/api/v1`.
+
+4. Set `MONGODB_URI` to a MongoDB Atlas or local MongoDB database and replace `JWT_SECRET` with a long random secret. Configure the Cloudinary, OpenWeatherMap, and optional Gemini variables in the root `.env`.
 
 ## Run
 
@@ -30,6 +32,12 @@ Run both applications:
 
 ```bash
 npm run dev
+```
+
+Run the API alone:
+
+```bash
+npm start
 ```
 
 Run them separately:
