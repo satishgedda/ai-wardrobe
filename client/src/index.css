@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #25221e;
+  background: #f3eee6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}

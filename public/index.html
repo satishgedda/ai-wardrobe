@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WardAI — AI Wardrobe Organizer</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- TOASTS -->
+  <div id="toastContainer"></div>
+
+  <!-- CANVAS BG -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- AMBIENT ORBS -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="noise-overlay"></div>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-gem">
+        <svg viewBox="0 0 32 32" fill="none">
+          <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="url(#hexG)" stroke-width="1.5"/>
+          <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" fill="url(#hexF)" opacity="0.35"/>
+          <defs>
+            <linearGradient id="hexG" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#38bdf8"/>
+            </linearGradient>
+            <linearGradient id="hexF" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#38bdf8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="logo-text">WARD<span class="logo-accent">AI</span></span>
+    </div>
+
+    <nav class="header-nav">
+      <div class="weather-chip" id="weatherChip">
+        <span class="weather-dot"></span>
+        <span id="weatherLabel">— °C</span>
+      </div>
+      <!-- gender badge shown in header after profile set -->
+      <div class="gender-badge hidden" id="headerGenderBadge"></div>
+      <button class="btn-header" onclick="showWardrobe()">
+        <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+          <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Wardrobe
+      </button>
+    </nav>
+  </header>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      AI Powered &nbsp;·&nbsp; Weather-Aware &nbsp;·&nbsp; Style Intelligence
+    </div>
+
+    <h1 class="hero-title">
+      <span class="title-line">DRESS</span>
+      <span class="title-line">LIKE THE</span>
+      <span class="title-line gradient-fill">FUTURE</span>
+    </h1>
+
+    <p class="hero-sub">
+      Your personal AI stylist reads the weather, knows your wardrobe,
+      and curates the perfect outfit — every single day.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="getSuggestion()">
+        <span class="btn-glow"></span>
+        <span>What Should I Wear?</span>
+        <span class="btn-arrow">→</span>
+      </button>
+      <button class="btn-secondary" onclick="showWardrobe()">Manage Wardrobe</button>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <span class="stat-num" id="statTotal">0</span>
+        <span class="stat-lbl">Pieces</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-pill">
+        <span class="stat-num" id="statOutfits">0</span>
+        <span class="stat-lbl">Outfits</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-pill">
+        <span class="stat-num">∞</span>
+        <span class="stat-lbl">Combos</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ GENDER / PROFILE SETUP MODAL ═══════════════ -->
+  <div class="modal-overlay hidden" id="profileModal">
+    <div class="modal-card">
+      <div class="modal-icon">✦</div>
+      <h2 class="modal-title">Welcome to WardAI</h2>
+      <p class="modal-sub">Tell us about yourself for smarter style suggestions</p>
+
+      <div class="field-wrap" style="margin-bottom:20px;">
+        <label class="field-label">Your Name (optional)</label>
+        <input type="text" id="profileName" placeholder="e.g. Priya" class="input-field dark-input" />
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label">Gender</label>
+        <div class="gender-selector">
+          <button class="gender-btn" data-gender="male" onclick="selectGender('male')">
+            <span class="gender-icon">👨</span>
+            <span>Male</span>
+          </button>
+          <button class="gender-btn" data-gender="female" onclick="selectGender('female')">
+            <span class="gender-icon">👩</span>
+            <span>Female</span>
+          </button>
+          <button class="gender-btn" data-gender="nonbinary" onclick="selectGender('nonbinary')">
+            <span class="gender-icon">🧑</span>
+            <span>Non-binary</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-primary modal-cta" onclick="saveProfile()" id="profileSaveBtn" disabled>
+        <span class="btn-glow"></span>
+        <span>Let's Style Me</span>
+        <span class="btn-arrow">→</span>
+      </button>
+
+      <p class="modal-skip" onclick="skipProfile()">Skip for now</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WARDROBE PANEL ═══════════════ -->
+  <div id="wardrobeSection" class="wardrobe-panel hidden">
+    <div class="panel-backdrop" onclick="closeWardrobe()"></div>
+    <div class="panel-content">
+
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Your Wardrobe</h2>
+          <p class="panel-sub">Add, manage &amp; organise your pieces</p>
+        </div>
+        <button class="btn-close" onclick="closeWardrobe()">
+          <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
+            <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── ADD FORM ── -->
+      <div class="add-form">
+        <h3 class="form-heading">➕ Add New Piece</h3>
+        <div class="form-layout">
+
+          <!-- UPLOAD ZONE -->
+          <div class="upload-zone" onclick="document.getElementById('imageInput').click()" id="uploadZone">
+            <input type="file" id="imageInput" accept="image/*" hidden onchange="previewImage(event)" />
+            <div class="upload-inner" id="uploadPlaceholder">
+              <div class="upload-icon-wrap">
+                <svg viewBox="0 0 40 40" fill="none" width="44" height="44">
+                  <circle cx="20" cy="20" r="19" stroke="url(#uG)" stroke-width="1"/>
+                  <path d="M20 14v12M14 20l6-6 6 6" stroke="url(#uG)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <defs>
+                    <linearGradient id="uG" x1="0" y1="0" x2="40" y2="40">
+                      <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#38bdf8"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <p class="upload-label">Drop image here</p>
+              <p class="upload-hint">or click to browse</p>
+            </div>
+            <img id="imagePreview" src="" class="hidden" alt="preview" />
+          </div>
+
+          <!-- FIELDS -->
+          <div class="form-fields">
+
+            <div class="field-wrap">
+              <label class="field-label">Category</label>
+              <div class="select-wrap">
+                <select id="category" class="input-field dark-input">
+                  <option value="">Select Category</option>
+                  <option value="top">👕 Top (T-shirt, Shirt)</option>
+                  <option value="bottom">👖 Bottom (Jeans, Pants)</option>
+                  <option value="shoes">👟 Footwear (Shoes, Sneakers)</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+
+            <div class="field-wrap">
+              <label class="field-label">Clothing Name</label>
+              <input type="text" id="type" placeholder="e.g. White Linen Shirt" class="input-field dark-input" />
+            </div>
+
+            <div class="field-wrap">
+              <label class="field-label">Occasion</label>
+              <div class="occasion-pills" id="occasionPills">
+                <button class="occ-pill active" data-val="casual" onclick="selectOccasion('casual', this)">Casual</button>
+                <button class="occ-pill" data-val="formal" onclick="selectOccasion('formal', this)">Formal</button>
+                <button class="occ-pill" data-val="party" onclick="selectOccasion('party', this)">Party</button>
+                <button class="occ-pill" data-val="sports" onclick="selectOccasion('sports', this)">Sports</button>
+              </div>
+              <input type="hidden" id="occasion" value="casual" />
+            </div>
+
+            <button class="btn-add" onclick="addCloth()">
+              <span>Add to Wardrobe</span>
+              <span class="btn-add-icon">+</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FILTER BAR ── -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterWardrobe('all', this)">All</button>
+        <button class="filter-btn" onclick="filterWardrobe('top', this)">Tops</button>
+        <button class="filter-btn" onclick="filterWardrobe('bottom', this)">Bottoms</button>
+        <button class="filter-btn" onclick="filterWardrobe('shoes', this)">Footwear</button>
+      </div>
+
+      <!-- ── WARDROBE GRID ── -->
+      <div class="wardrobe-items">
+        <h3 class="items-heading">
+          All Pieces <span class="items-count" id="itemsCount">0</span>
+        </h3>
+        <div class="wardrobe-grid" id="wardrobe"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ OUTFIT RESULT ═══════════════ -->
+  <section class="outfit-section hidden" id="outfitSection">
+    <div class="outfit-section-inner">
+      <div class="outfit-heading-row">
+        <div>
+          <p class="outfit-eyebrow">AI Generated</p>
+          <h2 class="outfit-title">Today's Outfit</h2>
+          <p class="outfit-meta" id="outfitMeta"></p>
+        </div>
+        <button class="btn-regenerate" onclick="getSuggestion(true)">
+          <span class="regen-icon">↻</span> Suggest Another
+        </button>
+      </div>
+      <p class="outfit-summary" id="summary"></p>
+      <div class="outfit-cards" id="outfit"></div>
+
+      <!-- outfit history pills -->
+      <div class="outfit-history-wrap hidden" id="outfitHistoryWrap">
+        <p class="history-label">Previous Suggestions</p>
+        <div class="outfit-history" id="outfitHistory"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ LOADING OVERLAY ═══════════════ -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loader-inner">
+      <div class="loader-ring"></div>
+      <p class="loader-text" id="loaderText">Styling your look…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CHATBOT ═══════════════ -->
+  <button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Fashion Assistant">
+    <span class="chat-fab-icon" id="chatFabIcon">
+      <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="chat-fab-close hidden" id="chatFabClose">✕</span>
+    <span class="chat-fab-ping"></span>
+  </button>
+
+  <div class="chat-window hidden" id="chatWindow">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="chat-avatar"><span>✦</span></div>
+        <div>
+          <div class="chat-name">StyleBot</div>
+          <div class="chat-status">
+            <span class="chat-online-dot"></span> Fashion AI · Always online
+          </div>
+        </div>
+      </div>
+      <button class="chat-header-close" onclick="toggleChat()">✕</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">
+        <div class="msg-bubble">
+          Hey! 👋 I'm <strong>StyleBot</strong>, your fashion AI.<br/>
+          Ask me about outfits, styling tips, color combos, or what to wear for any occasion!
+        </div>
+        <div class="msg-time">Just now</div>
+      </div>
+    </div>
+
+    <div class="chat-suggestions" id="chatSuggestions">
+      <button onclick="sendSuggestion('What should I wear to a casual date?')">Casual date?</button>
+      <button onclick="sendSuggestion('How do I match colors in an outfit?')">Color tips?</button>
+      <button onclick="sendSuggestion('Best outfit for hot weather?')">Hot weather?</button>
+    </div>
+
+    <div class="chat-input-row">
+      <input
+        type="text"
+        id="chatInput"
+        placeholder="Ask about fashion…"
+        class="chat-input dark-input"
+        onkeydown="if(event.key==='Enter') sendMessage()"
+        maxlength="300"
+      />
+      <button class="chat-send" onclick="sendMessage()" id="chatSendBtn">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+          <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
